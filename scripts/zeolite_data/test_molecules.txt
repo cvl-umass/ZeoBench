@@ -1,0 +1,4 @@
+# Seed 20261028 reservoir sample from C18-adsorption/each-zeolite-info.csv.
+IZASC/AET-0
+PCOD/8163091
+PCOD/8262181

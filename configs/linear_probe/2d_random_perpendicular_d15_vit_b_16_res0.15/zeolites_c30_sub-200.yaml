@@ -1,0 +1,85 @@
+name: 2d_random_perpendicular_d15_vit_b_16_res0.15_tta20_zeolites_c30_sub200
+task: regression
+cache_features: true
+debug: false
+resume_from_checkpoint: null
+default_root_dir: null
+pretrained_feature_extractor: /path/to/checkpoints/precompute/2d_random_perpendicular_d15_vit_b_16_res0.15_tta20/offline_features.pt
+finetune: false
+img_side: 96
+accumulate_grad_batches: 1
+max_epochs: 50
+accelerator: gpu
+strategy: ddp_find_unused_parameters_false
+devices: 1
+precision: 16-mixed
+sync_batchnorm: true
+benchmark: true
+num_nodes: 1
+spatial_probe: false
+performance:
+  disable_channel_last: false
+checkpoint:
+  enabled: true
+  dir: checkpoints
+  frequency: 1
+  monitor: val_loss
+  mode: min
+  save_top_k: 1
+  save_last: true
+auto_resume:
+  enabled: true
+  max_hours: 10000
+wandb:
+  enabled: false
+  entity: null
+  project: zeolites-linear-probe
+  offline: false
+data:
+  task: regression
+  num_classes: 1
+  subset_size: 10000
+  dataset_kwargs:
+    custom_train_file: /path/to/subsets/train_subset_${data.dataset_kwargs.target}_${data.subset_size}.txt
+    target: C30
+    full: false
+  dataset: zeolites
+  train_path: /path/to/dataset/zeolites
+  val_path: /path/to/dataset/zeolites
+  format: h5
+  no_labels: false
+  fraction: 1.0
+  num_workers: 4
+  linear_probe_subset_size: 200
+optimizer:
+  lr: 0.1
+  batch_size: 64
+  name: adamw
+  weight_decay: 0.0001
+  classifier_lr: 0.01
+  kwargs:
+    betas:
+    - 0.9
+    - 0.999
+scheduler:
+  warmup_epochs: 10
+  max_epochs: 100
+  name: warmup_cosine
+  warmup_start_lr: 0.0
+train_transform:
+  _target_: solo.data.custom_transforms.ZeoAugmentation
+  crop_size: ${img_side}
+  grid_resolution: 0.45
+  rotate: true
+  translate: true
+val_transform:
+  _target_: solo.data.custom_transforms.ZeoValidationTransform
+  crop_size: ${img_side}
+  grid_resolution: 0.45
+backbone:
+  _target_: solo.backbones.resnet.resnet18_3d
+  kwargs:
+    in_channels: 1
+    spatial_dims: 3
+    conv1_t_stride: 2
+    no_max_pool: true

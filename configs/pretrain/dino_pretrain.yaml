@@ -1,0 +1,97 @@
+name: dino-resnet18-3d-zeolites
+max_epochs: 400
+task: regression
+debug: false
+resume_from_checkpoint: null
+default_root_dir: null
+accumulate_grad_batches: 1
+img_side: 64
+scheduler:
+  warmup_epochs: 10
+  max_epochs: 400
+  name: warmup_cosine
+  warmup_start_lr: 0.0
+accelerator: gpu
+strategy: ddp
+devices: 2
+precision: 16-mixed
+sync_batchnorm: true
+benchmark: true
+num_nodes: 1
+performance:
+  disable_channel_last: false
+checkpoint:
+  enabled: true
+  dir: trained_models
+  frequency: 1
+  monitor: val_loss
+  mode: min
+  save_top_k: 1
+  save_last: true
+auto_resume:
+  max_hours: 10000
+  enabled: true
+wandb:
+  enabled: false
+  entity: null
+  project: zeolites-pretrain
+  offline: false
+train_transform:
+  _target_: solo.data.custom_transforms.ZeoAugmentation
+  crop_size: ${img_side}
+  grid_resolution: 0.45
+  rotate: true
+  translate: true
+val_transform:
+  _target_: solo.data.custom_transforms.ZeoValidationTransform
+  crop_size: ${img_side}
+  grid_resolution: 0.45
+method: dino
+method_kwargs:
+  proj_hidden_dim: 2048
+  proj_output_dim: 256
+  num_prototypes: 4096
+  warmup_teacher_temperature_epochs: 50
+  clip_grad: 3.0
+momentum:
+  base_tau: 0.9995
+  final_tau: 1.0
+  classifier: false
+optimizer:
+  weight_decay: 1.0e-06
+  name: lars
+  batch_size: 512
+  lr: 1.0
+  classifier_lr: 0.001
+  kwargs:
+    clip_lr: true
+    eta: 0.02
+    exclude_bias_n_norm: true
+backbone:
+  _target_: solo.backbones.resnet.resnet18_3d
+  kwargs:
+    in_channels: 1
+    spatial_dims: 3
+    conv1_t_stride: 2
+    no_max_pool: true
+data:
+  dataset: zeolites
+  task: regression
+  train_path: /path/to/dataset/zeolites
+  val_path: /path/to/dataset/zeolites/
+  format: h5
+  no_labels: false
+  fraction: 1.0
+  dataset_kwargs:
+    target: C18
+  num_workers: 4
+augmentations:
+- _target_: solo.data.custom_transforms.ZeoAugmentation
+  num_crops: 2
+  crop_size: ${img_side}
+  grid_resolution: 0.45
+  rotate: true
+  translate: true
+  grid_res_sigma: 0.0
+pretrained_feature_extractor: /path/to/checkpoints/dino_resnet/dino_resnet_sweep-long-lr-optimizer.classifier_lr-bs-sigma/lr-1e0_optimizer.classifier_lr-1e-3_bs-512_sigma-0.0_optimizer.weight_decay-1e-6/dino-resnet18-3d-zeolites-0-ep=399.ckpt
+num_tta_views: 1
