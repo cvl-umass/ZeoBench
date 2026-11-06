@@ -1,4 +1,6 @@
-# Zeobench
+# ZeoBench: A Benchmark for Self-Supervised Learning on 3D Zeolite Representations
+[site](https://cvl-umass.github.io/ZeoBench/) arxiv [data](https://github.com/cvl-umass/ZeoBench/blob/main/docs/ZEOLITE_DATA_PREPROCESSING.md)
+
 Built on the [solo-learn](https://github.com/vturrisi/solo-learn) framework and codebase.
 The environment information is provided in `requirements.txt` and the python version used was python 3.10.20.
 ## Preparing the Zeolite Dataset
